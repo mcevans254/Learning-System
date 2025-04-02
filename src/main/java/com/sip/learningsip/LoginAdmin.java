@@ -24,7 +24,7 @@ public class LoginAdmin extends Application {
     @Override
     public void start(Stage primaryStage) {
         // Title
-        Text title = new Text("Login");
+        Text title = new Text("Admin Login");
         title.setFont(Font.font("Arial", 28));
         title.setFill(Color.WHITE);
 
@@ -114,7 +114,7 @@ public class LoginAdmin extends Application {
 
         // Scene and Stage
         Scene scene = new Scene(form, 450, 600);
-        primaryStage.setTitle("Login Form");
+        primaryStage.setTitle("Admin Login Form");
         primaryStage.setScene(scene);
         primaryStage.show();
     }
@@ -130,9 +130,9 @@ public class LoginAdmin extends Application {
         }
 
         // Validate user credentials
-        if (validateUser(username, password)) {
+        if (authenticateUser(username, password)) {
             // Open the Welcome Form upon successful login
-            openWelcomeAdminForm(primaryStage);
+            openWelcomeForm(primaryStage);
         } else {
             errorLabel.setText("Invalid username or password!");
         }
@@ -148,7 +148,8 @@ public class LoginAdmin extends Application {
             if (rs.next()) {
                 String storedPassword = rs.getString("password");
 
-                return Boolean.parseBoolean(storedPassword);
+                return password.equals(storedPassword);
+
             }
         } catch (SQLException e) {
             e.printStackTrace();
@@ -157,62 +158,14 @@ public class LoginAdmin extends Application {
     }
 
 
-    private boolean validateUser(String username, String password) {
-        // Database connection details
-        String url = "jdbc:mysql://localhost:3306/sip"; // Replace with your actual DB details
-        String dbUser = "root"; // Replace with your DB username
-        String dbPassword = ""; // Replace with your DB password
-
-        String query = "SELECT password FROM admin WHERE username = ?";
-
-        try (Connection connection = DriverManager.getConnection(url, dbUser, dbPassword);
-             PreparedStatement statement = connection.prepareStatement(query)) {
-
-            statement.setString(1, username);
-
-            ResultSet resultSet = statement.executeQuery();
-
-            if (resultSet.next()) {
-                String storedHashedPassword = resultSet.getString("password");
-                return hashPassword(password).equals(storedHashedPassword);
-            } else {
-                return false;
-            }
-
-        } catch (Exception e) {
-            e.printStackTrace();
-            errorLabel.setText("Database connection failed! Please try again later.");
-            return false;
-        }
-    }
-
-    private String hashPassword(String password) {
-        try {
-            MessageDigest digest = MessageDigest.getInstance("SHA-256");
-            byte[] hashBytes = digest.digest(password.getBytes());
-            StringBuilder hexString = new StringBuilder();
-
-            for (byte b : hashBytes) {
-                String hex = Integer.toHexString(0xff & b);
-                if (hex.length() == 1) {
-                    hexString.append('0');
-                }
-                hexString.append(hex);
-            }
-            return hexString.toString();
-        } catch (Exception e) {
-            throw new RuntimeException("Error hashing password", e);
-        }
-    }
-
-    private void openWelcomeAdminForm(Stage primaryStage) {
+    private void openWelcomeForm(Stage primaryStage) {
         primaryStage.close();
 
-        WelcomeAdminForm welcomeAdminForm = new WelcomeAdminForm();
+        WelcomeAdminForm welcomeAdminFormForm = new WelcomeAdminForm();
         Stage welcomeStage = new Stage();
 
         try {
-            welcomeAdminForm.start(welcomeStage);
+            welcomeAdminFormForm.start(welcomeStage);
         } catch (Exception e) {
             e.printStackTrace();
             System.err.println("Error opening WelcomeForm: " + e.getMessage());

@@ -15,7 +15,7 @@ import javafx.stage.Stage;
 import java.security.MessageDigest;
 import java.sql.*;
 
-public class LoginInstructor extends Application {
+public class LoginForm extends Application {
 
     private TextField usernameField;
     private PasswordField passwordField;
@@ -74,6 +74,7 @@ public class LoginInstructor extends Application {
         noAccountLabel.setTextFill(Color.WHITE);
         Hyperlink signUpLink = new Hyperlink("Sign Up");
         signUpLink.setTextFill(Color.ORANGE);
+        signUpLink.setOnAction(event -> openRegistrationForm());
 
         signUpRow.getChildren().addAll(noAccountLabel, signUpLink);
 
@@ -118,7 +119,17 @@ public class LoginInstructor extends Application {
         primaryStage.setScene(scene);
         primaryStage.show();
     }
+    private void openRegistrationForm() {
+        Stage registrationStage = new Stage(); // Create a new stage for RegistrationForm
+        RegistrationForm registrationForm = new RegistrationForm(); // Replace with the name of your registration class
 
+        try {
+            registrationForm.start(registrationStage); // Open the RegistrationForm
+        } catch (Exception e) {
+            e.printStackTrace();
+            System.err.println("Error opening RegistrationForm: " + e.getMessage());
+        }
+    }
     private void loginUser(Stage primaryStage) {
         String username = usernameField.getText().trim();
         String password = passwordField.getText().trim();
@@ -130,7 +141,7 @@ public class LoginInstructor extends Application {
         }
 
         // Validate user credentials
-        if (authenticateUser(username, password)) {
+        if (validateUser(username, password)) {
             // Open the Welcome Form upon successful login
             openWelcomeForm(primaryStage);
         } else {
@@ -138,7 +149,7 @@ public class LoginInstructor extends Application {
         }
     }
     public static boolean authenticateUser(String username, String password) {
-        String query = "SELECT password FROM instructor WHERE username = ?";
+        String query = "SELECT password FROM users WHERE username = ?";
         try (Connection conn = DatabaseConnection.getConnection();
              PreparedStatement stmt = conn.prepareStatement(query)) {
 
@@ -148,8 +159,7 @@ public class LoginInstructor extends Application {
             if (rs.next()) {
                 String storedPassword = rs.getString("password");
 
-                return password.equals(storedPassword);
-
+                return Boolean.parseBoolean(storedPassword);
             }
         } catch (SQLException e) {
             e.printStackTrace();
@@ -158,10 +168,58 @@ public class LoginInstructor extends Application {
     }
 
 
+    private boolean validateUser(String username, String password) {
+        // Database connection details
+        String url = "jdbc:mysql://localhost:3306/sip"; // Replace with your actual DB details
+        String dbUser = "root"; // Replace with your DB username
+        String dbPassword = ""; // Replace with your DB password
+
+        String query = "SELECT password FROM users WHERE username = ?";
+
+        try (Connection connection = DriverManager.getConnection(url, dbUser, dbPassword);
+             PreparedStatement statement = connection.prepareStatement(query)) {
+
+            statement.setString(1, username);
+
+            ResultSet resultSet = statement.executeQuery();
+
+            if (resultSet.next()) {
+                String storedHashedPassword = resultSet.getString("password");
+                return hashPassword(password).equals(storedHashedPassword);
+            } else {
+                return false;
+            }
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            errorLabel.setText("Database connection failed! Please try again later.");
+            return false;
+        }
+    }
+
+    private String hashPassword(String password) {
+        try {
+            MessageDigest digest = MessageDigest.getInstance("SHA-256");
+            byte[] hashBytes = digest.digest(password.getBytes());
+            StringBuilder hexString = new StringBuilder();
+
+            for (byte b : hashBytes) {
+                String hex = Integer.toHexString(0xff & b);
+                if (hex.length() == 1) {
+                    hexString.append('0');
+                }
+                hexString.append(hex);
+            }
+            return hexString.toString();
+        } catch (Exception e) {
+            throw new RuntimeException("Error hashing password", e);
+        }
+    }
+
     private void openWelcomeForm(Stage primaryStage) {
         primaryStage.close();
 
-        InstructorDashboard welcomeForm = new InstructorDashboard();
+        WelcomeForm welcomeForm = new WelcomeForm();
         Stage welcomeStage = new Stage();
 
         try {

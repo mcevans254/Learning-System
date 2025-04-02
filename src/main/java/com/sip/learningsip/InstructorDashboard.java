@@ -71,7 +71,7 @@ public class InstructorDashboard extends Application {
             logoutButton.setStyle("-fx-background-color: white; -fx-text-fill: black;");
             logoutButton.setOnAction(e -> {
                 ((Stage) logoutButton.getScene().getWindow()).close(); // Close the current modal
-                openloginForm();
+                openIndexApplication();
             });
 
             authButtons.getChildren().addAll(logoutButton);
@@ -158,7 +158,7 @@ public class InstructorDashboard extends Application {
                 courseBody.setWrapText(true);
 
                 // Button for navigation
-                Button navigateButton = new Button("Start Course");
+                Button navigateButton = new Button("Add Materials For Course");
                 navigateButton.setStyle("-fx-background-color: #007bff; -fx-text-fill: white;");
                 navigateButton.setOnAction(e -> openCourseApplication(title));
 
@@ -168,14 +168,14 @@ public class InstructorDashboard extends Application {
 
             return grid;
         }
-        private void openloginForm() {
-            // Create an instance of WelcomeForm
-            LoginForm loginForm = new LoginForm();
-            Stage loginStage = new Stage(); // Create a new Stage for WelcomeForm
+        private void openIndexApplication() {
+            // Create an instance of Index Form
+            IndexApplication  indexApplication= new IndexApplication();
+            Stage indexApplicationStage = new Stage(); // Create a new Stage for WelcomeForm
 
             try {
                 // Use the WelcomeForm's start() method to display it
-                loginForm.start(loginStage);
+                indexApplication.start(indexApplicationStage);
             } catch (Exception e) {
                 System.err.println("Error opening WelcomeForm: " + e.getMessage());
                 e.printStackTrace(); // Print stack trace for debugging

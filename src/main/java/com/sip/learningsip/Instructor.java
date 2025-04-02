@@ -23,9 +23,6 @@ public class Instructor extends Application {
 
     private TableView<InstructorModel> table;
 
-    public static void main(String[] args) {
-        launch(args);
-    }
 
     @Override
     public void start(Stage primaryStage) {
@@ -96,4 +93,8 @@ public class Instructor extends Application {
 
         return instructorList;
     }
+    public static void main(String[] args) {
+        launch(args);
+    }
+
 }
